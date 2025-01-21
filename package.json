@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Self-hosted REST API for interacting with the smart-order-router of uniswap",
   "main": "src/app.ts",
-  "author": "Jakob S.",
+  "author": "HugaidaS",
   "license": "MIT",
   "scripts": {
     "build": "tsc",
