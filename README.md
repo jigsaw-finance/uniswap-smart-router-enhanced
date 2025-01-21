@@ -21,7 +21,7 @@ and execute swaps efficiently.
 ### Prerequisites
 
 - Node.js (v14 or higher).
-- npm package manager.
+- Yarn package manager.
 
 ### Steps
 
@@ -33,7 +33,7 @@ and execute swaps efficiently.
 
 2. Install dependencies:
    ```bash
-   npm install
+   yarn install
    ```
 
 3. Create a `.env` file with the following variables:
@@ -46,12 +46,12 @@ and execute swaps efficiently.
 4. Run the server:
     - For development:
       ```bash
-      npm run dev
+      yarn dev
       ```
     - For production (build first):
       ```bash
-      npm run build
-      npm start
+      yarn build
+      yarn start
       ```
 
 ### Docker
