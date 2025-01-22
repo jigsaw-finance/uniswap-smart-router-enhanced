@@ -5,12 +5,14 @@ import {Percent, TradeType} from "@uniswap/sdk-core";
 import dotenv from 'dotenv';
 import cors from 'cors';
 import {formatResponse, parseToken} from "./utils";
+import serverless from 'serverless-http';
 
 dotenv.config();
 
 const port = Number(process.env.PORT) || 3000;
 const chainId = Number(process.env.CHAIN_ID) || 1;
 const jsonRpcURL = process.env.JSON_RPC_URL;
+const environment = process.env.ENVIRONMENT;
 
 console.log(`Using chainId ${chainId} and JSON RPC URL ${jsonRpcURL}`);
 
@@ -52,6 +54,10 @@ app.post('/route', (req, res) => {
   });
 });
 
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
-});
+if (environment === 'production') {
+  module.exports.handler = serverless(app);
+} else {
+  app.listen(port, () => {
+    console.log(`Server listening on port ${port}`);
+  });
+}

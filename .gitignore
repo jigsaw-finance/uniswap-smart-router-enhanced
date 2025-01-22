@@ -132,3 +132,5 @@ dist
 # IDE
 .idea/
 *.iml
+bin/
+build.zip

@@ -1,0 +1,47 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '22'
+
+      - name: Install dotenv
+        shell: bash
+        env:
+          DOTENV_STAGING: ${{ secrets.DOTENV_STAGING }}
+        run: |
+          echo "$DOTENV_STAGING" > .env
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build application
+        run: yarn build
+
+      - name: Zip directory to deploy to aws lambda
+        run: zip -r build.zip . && cd ../../
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_STAGING }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_STAGING }}
+          aws-region: us-east-1
+
+      - name: Deploy static content and build.zip to S3 bucket
+        run: |
+          aws s3 cp build.zip s3://jigsaw-main-frontend-staging 
+
+      - name: Deploy build.zip from S3 bucket to aws lambda
+        run: aws lambda update-function-code --function-name UniswapRouterEnhancedSsrHandler --s3-bucket jigsaw-uniswap-router-enhanced-staging --s3-key build.zip --no-cli-pager
