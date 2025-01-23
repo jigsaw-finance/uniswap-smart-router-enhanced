@@ -28,9 +28,12 @@ jobs:
 
       - name: Build application
         run: yarn build
+        
+      - name: Copy .env to bin/ directory
+        run: cp .env bin
 
       - name: Zip directory to deploy to aws lambda
-        run: zip -r build.zip . && cd ../../
+        run: zip -rj build.zip bin
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -41,7 +44,7 @@ jobs:
 
       - name: Deploy static content and build.zip to S3 bucket
         run: |
-          aws s3 cp build.zip s3://jigsaw-main-frontend-staging 
+          aws s3 cp build.zip s3://jigsaw-uniswap-router-enhanced-staging
 
       - name: Deploy build.zip from S3 bucket to aws lambda
         run: aws lambda update-function-code --function-name UniswapRouterEnhancedHandler --s3-bucket jigsaw-uniswap-router-enhanced-staging --s3-key build.zip --no-cli-pager
