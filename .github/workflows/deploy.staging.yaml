@@ -44,4 +44,4 @@ jobs:
           aws s3 cp build.zip s3://jigsaw-main-frontend-staging 
 
       - name: Deploy build.zip from S3 bucket to aws lambda
-        run: aws lambda update-function-code --function-name UniswapRouterEnhancedSsrHandler --s3-bucket jigsaw-uniswap-router-enhanced-staging --s3-key build.zip --no-cli-pager
+        run: aws lambda update-function-code --function-name UniswapRouterEnhancedHandler --s3-bucket jigsaw-uniswap-router-enhanced-staging --s3-key build.zip --no-cli-pager
