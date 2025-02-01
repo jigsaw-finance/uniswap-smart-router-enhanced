@@ -4,8 +4,9 @@ import {AlphaRouter, CurrencyAmount, SwapOptionsSwapRouter02, SwapType} from '@u
 import {Percent, TradeType} from "@uniswap/sdk-core";
 import dotenv from 'dotenv';
 import cors from 'cors';
-import {formatResponse, parseToken} from "./utils";
+import {formatResponse, fromReadableAmount, parseToken} from "./utils";
 import serverless from 'serverless-http';
+import {SwapParams} from "./types";
 
 dotenv.config();
 
@@ -25,28 +26,38 @@ const router = new AlphaRouter({chainId, provider: jsonRpcClient});
 
 app.post('/route', (req, res) => {
   console.log("Requesting");
-  const reqBody = req.body;
+  const {
+    amount,
+    recipient,
+    tradeType = TradeType.EXACT_OUTPUT
+  }: SwapParams = req.body;
 
-  const currencyAmount = parseToken(reqBody.currencyAmount, chainId);
-  const currency = parseToken(reqBody.currency, chainId);
-  const tradeType = reqBody.tradeType as TradeType || TradeType.EXACT_INPUT;
-  const recipient = reqBody.recipient as string;
+  const currencyAmount = parseToken(req.body.currencyAmount, chainId);
+  const currency = parseToken(req.body.currency, chainId);
 
   const swapOptions: SwapOptionsSwapRouter02 = {
-    recipient: recipient,
+    recipient,
     slippageTolerance: new Percent(50, 10_000), // 0.5%
     deadline: Math.floor(Date.now() / 1000 + 1800), // 30 minutes
     type: SwapType.SWAP_ROUTER_02,
   }
 
-  router.route(CurrencyAmount.fromRawAmount(currencyAmount, reqBody.amount), currency, tradeType, swapOptions)
-    .then(route => {
+  router.route(
+      CurrencyAmount.fromRawAmount(
+          currencyAmount,
+          fromReadableAmount(amount, currencyAmount.decimals).toString()
+      ),
+      currency,
+      tradeType,
+      swapOptions,
+      {distributionPercent:100} //  The minimum percentage of the input token to use for each route in a split route.
+  ).then(route => {
       if (!route) {
         res.status(404);
         res.send("No route found");
         return;
       }
-      res.json(formatResponse(route));
+      res.json(formatResponse(route, tradeType));
     }).catch(err => {
     res.status(500);
     res.send("Internal server error")
