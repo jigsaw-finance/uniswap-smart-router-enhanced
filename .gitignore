@@ -135,3 +135,4 @@ dist
 lambda-layer/
 bin/
 build.zip
+.DS_Store

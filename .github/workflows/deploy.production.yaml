@@ -1,0 +1,50 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '22'
+
+      - name: Install dotenv
+        shell: bash
+        env:
+          DOTENV_PRODUCTION: ${{ secrets.DOTENV_PRODUCTION }}
+        run: |
+          echo "$DOTENV_PRODUCTION" > .env
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build application
+        run: yarn build
+
+      - name: Copy .env to bin/ directory
+        run: cp .env bin
+
+      - name: Zip directory to deploy to aws lambda
+        run: zip -rj build.zip bin
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PRODUCTION }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PRODUCTION }}
+          aws-region: us-east-1
+
+      - name: Deploy static content and build.zip to S3 bucket
+        run: |
+          aws s3 cp build.zip s3://jigsaw-uniswap-router-enhanced-production
+
+      - name: Deploy build.zip from S3 bucket to aws lambda
+        run: aws lambda update-function-code --function-name UniswapRouterEnhancedHandler --s3-bucket jigsaw-uniswap-router-enhanced-production --s3-key build.zip --no-cli-pager
