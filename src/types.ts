@@ -6,4 +6,7 @@ export interface SwapParams {
     currency: Token
     tradeType: TradeType,
     recipient: string,
+    chainId: number,
+    slippageTolerance: number,
+    deadline: number
 }
